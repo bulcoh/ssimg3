@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Strong Workout Image</title>
+
+<style>
+body{
+background:#111;
+color:white;
+font-family:-apple-system,BlinkMacSystemFont;
+text-align:center;
+margin:40px;
+}
+
+textarea{
+width:90%;
+max-width:700px;
+height:180px;
+margin-top:10px;
+}
+
+canvas{
+margin-top:20px;
+border-radius:16px;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Workout Image</h2>
+
+<input type="file" id="photo"><br>
+
+<textarea id="log" placeholder="Strong 로그"></textarea><br>
+
+<button onclick="generate()">Generate</button>
+
+<br>
+
+<canvas id="canvas" width="1080" height="1080"></canvas>
+
+<script>
+
+async function tryClipboard(){
+
+try{
+const text = await navigator.clipboard.readText()
+if(text.includes("kg") || text.includes("lb"))
+document.getElementById("log").value = text
+}catch(e){}
+
+}
+
+tryClipboard()
+
+function parseStrong(text){
+
+const lines = text.split("\n").map(v=>v.trim()).filter(v=>v)
+
+let title = lines[0] || "Workout"
+let date = ""
+let exercises = []
+let current = null
+
+for(let l of lines){
+
+if(/\d{4}/.test(l)) date = l
+
+if(/kg|lb/.test(l)){
+
+if(current){
+
+current.sets.push(l)
+
+}
+
+}else{
+
+if(current) exercises.push(current)
+
+current = {
+name:l,
+sets:[]
+}
+
+}
+
+}
+
+if(current) exercises.push(current)
+
+exercises = exercises.filter(e=>e.sets.length>0)
+
+return {title,date,exercises}
+
+}
+
+function drawContain(ctx,img){
+
+const cw=1080
+const ch=1080
+
+const ir = img.width/img.height
+const cr = cw/ch
+
+let w,h,x,y
+
+if(ir>cr){
+
+w=cw
+h=cw/ir
+x=0
+y=(ch-h)/2
+
+}else{
+
+h=ch
+w=ch*ir
+y=0
+x=(cw-w)/2
+
+}
+
+ctx.drawImage(img,x,y,w,h)
+
+}
+
+function generate(){
+
+const log = document.getElementById("log").value
+const file = document.getElementById("photo").files[0]
+
+const canvas = document.getElementById("canvas")
+const ctx = canvas.getContext("2d")
+
+ctx.fillStyle="#000"
+ctx.fillRect(0,0,1080,1080)
+
+const data = parseStrong(log)
+
+function drawText(){
+
+ctx.fillStyle="white"
+
+ctx.font="bold 60px sans-serif"
+ctx.fillText(data.title,60,90)
+
+ctx.font="28px sans-serif"
+ctx.fillText(data.date,60,140)
+
+let y=220
+
+for(let ex of data.exercises){
+
+ctx.font="bold 36px sans-serif"
+ctx.fillText(ex.name,60,y)
+
+y+=40
+
+ctx.font="30px monospace"
+
+for(let s of ex.sets){
+
+ctx.fillText(s,90,y)
+
+y+=36
+
+}
+
+y+=20
+
+}
+
+}
+
+if(file){
+
+const img=new Image()
+
+img.onload=function(){
+
+drawContain(ctx,img)
+
+ctx.fillStyle="rgba(0,0,0,0.45)"
+ctx.fillRect(0,0,1080,1080)
+
+drawText()
+
+}
+
+img.src=URL.createObjectURL(file)
+
+}else{
+
+drawText()
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
