@@ -252,14 +252,17 @@
             const lines = para.split('\n').map(l => l.trim());
             let foundName = "", setsInPara = 0, dropSets = 0, warmSets = 0, hasRecord = false, noteText = "";
             lines.forEach(line => {
-                const isSet = /^(세트\s*\d+|W|F|D|Set\s*\d+):/i.test(line);
+                const isSet = /^(세트\s*\d+|W\d*|F\d*|D\d*|Set\s*\d+):/i.test(line);
                 if (isSet) {
                     hasRecord = true;
                     const upper = line.toUpperCase();
-                    if (upper.startsWith('W:')) { warmSets++; }
-                    else {
+                    const isWarm = /^W\d*:/i.test(line) || line.includes('[워밍업]');
+                    const isDrop = line.includes('[드롭세트]') || line.includes('[드롭]') || /^D\d*:/i.test(line);
+                    if (isWarm) {
+                        warmSets++;  // 총세트 카운트 제외, 표기만
+                    } else {
                         totalSets++;
-                        if (upper.startsWith('D:')) dropSets++;
+                        if (isDrop) dropSets++;
                         else setsInPara++;
                     }
                 } else if (line.startsWith('노트:')) {
