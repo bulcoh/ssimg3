@@ -250,19 +250,24 @@
         let totalSets = 0, exerciseList = [];
         paragraphs.slice(1).forEach(para => {
             const lines = para.split('\n').map(l => l.trim());
-            let foundName = "", setsInPara = 0, hasRecord = false, noteText = "";
+            let foundName = "", setsInPara = 0, dropSets = 0, hasRecord = false, noteText = "";
             lines.forEach(line => {
                 const isSet = /^(세트\s*\d+|W|F|D|Set\s*\d+):/i.test(line);
                 if (isSet) {
                     hasRecord = true;
-                    if (!line.toUpperCase().startsWith('W:')) { totalSets++; setsInPara++; }
+                    const upper = line.toUpperCase();
+                    if (!upper.startsWith('W:')) {
+                        totalSets++;
+                        if (upper.startsWith('D:')) dropSets++;
+                        else setsInPara++;
+                    }
                 } else if (line.startsWith('노트:')) {
                     noteText = line.replace('노트:', '').trim();
                 } else if (!foundName && isNaN(line[0]) && !line.includes("kg") && !line.startsWith("http")) {
                     foundName = line;
                 }
             });
-            if (foundName && hasRecord) exerciseList.push({ name: foundName, sets: setsInPara, note: noteText });
+            if (foundName && hasRecord) exerciseList.push({ name: foundName, sets: setsInPara, drops: dropSets, note: noteText });
         });
 
         return { workoutTitle, dateTime, fileDate, minutes, totalSets, exerciseList };
@@ -346,9 +351,18 @@
                 name += "..";
             }
             ctx.fillText(name, x, y);
-            ctx.textAlign = "right"; ctx.fillStyle = "#ff4757";
+            ctx.textAlign = "right";
             ctx.font = "700 " + (ex.sets > 5 ? 26 : 36) + "px 'Inter'";
-            ctx.fillText("ㅇ".repeat(ex.sets), x + colW, y);
+            // 일반 세트(레드) + 드롭(파란색) ㅇ
+            const aDrops = ex.drops || 0;
+            ctx.fillStyle = "#ff4757";
+            const aNorm = "ㅇ".repeat(ex.sets);
+            const aDrop = "ㅇ".repeat(aDrops);
+            const aDropW = ctx.measureText(aDrop).width;
+            ctx.fillStyle = "#4a9eff";
+            ctx.fillText(aDrop, x + colW, y);
+            ctx.fillStyle = "#ff4757";
+            ctx.fillText(aNorm, x + colW - aDropW, y);
         });
 
         const summaryY = canvas.height - 180 - (Math.max(half, exerciseList.length - half) - 1) * rowHeight - 110; 
@@ -446,11 +460,17 @@
                 ctx.fillText(ex.note, x, y + 22);
             }
 
-            // ㅇ 세트
-            ctx.fillStyle = "#ff4757";
+            // ㅇ 세트 — 일반:레드, 드롭:파란색
             ctx.font = "700 " + (ex.sets > 5 ? 26 : 32) + "px 'Inter'";
             ctx.textAlign = "right";
-            ctx.fillText("ㅇ".repeat(ex.sets), xR, y);
+            const bDrops = ex.drops || 0;
+            const bDrop = "ㅇ".repeat(bDrops);
+            const bNorm = "ㅇ".repeat(ex.sets);
+            const bDropW = ctx.measureText(bDrop).width;
+            ctx.fillStyle = "#4a9eff";
+            ctx.fillText(bDrop, xR, y);
+            ctx.fillStyle = "#ff4757";
+            ctx.fillText(bNorm, xR - bDropW, y);
         });
 
         // 하단 서명
@@ -543,17 +563,27 @@
                 blockY = y + 46;
             }
 
-            // 세트 블록 — 붉은색
-            ctx.fillStyle = ACCENT;
+            // 세트 블록 — 일반:레드, 드롭:파란색
             const bW = 26, bH = 20, bGap = 6;
-            const bc = Math.min(ex.sets, 10);
-            for (let s = 0; s < bc; s++) {
-                ctx.fillRect(iX + s * (bW + bGap), blockY - bH, bW, bH);
+            const totalBlocks = Math.min(ex.sets + (ex.drops || 0), 12);
+            const normalCount = Math.min(ex.sets, 12);
+            const dropCount = Math.min(ex.drops || 0, 12 - normalCount);
+            let bx = iX;
+            // 일반 세트 (레드)
+            ctx.fillStyle = ACCENT;
+            for (let s = 0; s < normalCount; s++) {
+                ctx.fillRect(bx + s * (bW + bGap), blockY - bH, bW, bH);
             }
-            if (ex.sets > 10) {
+            bx += normalCount * (bW + bGap);
+            // 드롭 세트 (파란색)
+            ctx.fillStyle = "#4a9eff";
+            for (let s = 0; s < dropCount; s++) {
+                ctx.fillRect(bx + s * (bW + bGap), blockY - bH, bW, bH);
+            }
+            if ((ex.sets + (ex.drops || 0)) > 12) {
                 ctx.fillStyle = "rgba(255,255,255,0.5)";
                 ctx.font = "400 17px 'Inter'";
-                ctx.fillText("+" + (ex.sets - 10), iX + bc * (bW + bGap) + 4, blockY - 2);
+                ctx.fillText("+" + (ex.sets + (ex.drops||0) - 12), bx + dropCount * (bW + bGap) + 4, blockY - 2);
             }
         });
 
