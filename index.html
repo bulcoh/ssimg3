@@ -1,458 +1,592 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Workout Card</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SSimage 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;700&family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        * { -webkit-user-select: none; -webkit-touch-callout: none; }
+        
+        body { font-family: 'Inter', sans-serif; background: #111; color: #eee; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
+        
+        .editor { width: 100%; max-width: 500px; background: #222; padding: 20px; border-radius: 20px; box-sizing: border-box; }
+        h2 { font-family: 'Archivo Black', sans-serif; text-align: center; color: #ff4757; font-size: 24px; margin-top: 0; }
+        
+        textarea { 
+            width: 100%; height: 100px; background: #333; border: 1px solid #444; color: #fff; 
+            padding: 10px; border-radius: 10px; margin-bottom: 10px; resize: none; outline: none; box-sizing: border-box;
+            -webkit-user-select: text; font-size: 16px;
+        }
+        
+        .btn { background: #ff4757; color: white; padding: 18px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; width: 100%; font-size: 18px; margin-bottom: 10px; -webkit-appearance: none; box-sizing: border-box; }
+        .btn-sub { background: #444; font-size: 16px; }
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .btn-group .btn { flex: 1; font-size: 14px; padding: 12px; margin-bottom: 0; }
+        .btn-swim { background: #1e90ff; }
+        .btn-run { background: #2ed573; }
 
-* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        .btn-done { background: #222 !important; color: #666 !important; border: 1px solid #444; opacity: 0.7; pointer-events: none; }
+        .btn-data { background: #2f3542; color: #ced4da; margin-top: 5px; display: none; }
 
-:root {
-  --ink: #0d0d0d;
-  --paper: #f0ece3;
-  --ruled: #ddd8ce;
-  --red: #e63322;
-}
+        /* --- 타입 선택 UI --- */
+        .type-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .type-btn {
+            flex: 1;
+            padding: 10px 0;
+            border-radius: 12px;
+            border: 2px solid #444;
+            background: #2a2a2a;
+            color: #888;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            -webkit-appearance: none;
+        }
+        .type-btn.active-A { border-color: #ff4757; color: #ff4757; background: rgba(255,71,87,0.12); }
+        .type-btn.active-B { border-color: #00d2ff; color: #00d2ff; background: rgba(0,210,255,0.10); }
+        .type-btn.active-C { border-color: #f9ca24; color: #f9ca24; background: rgba(249,202,36,0.10); }
+        .type-label { font-size: 10px; display: block; margin-top: 2px; opacity: 0.8; }
 
-body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: 'Noto Sans KR', sans-serif;
-  min-height: 100vh;
-  padding: 24px 16px 80px;
-}
-
-.app-header {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  margin-bottom: 28px;
-  border-bottom: 3px solid var(--ink);
-  padding-bottom: 12px;
-}
-.app-title { font-family: 'Anton', sans-serif; font-size: 2.4rem; letter-spacing: 1px; line-height: 1; }
-.app-title span { color: var(--red); }
-.app-ver { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #999; padding-bottom: 4px; }
-
-.block {
-  background: white;
-  border: 2px solid var(--ink);
-  margin-bottom: 10px;
-  box-shadow: 4px 4px 0 var(--ink);
-}
-.block-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px;
-  border-bottom: 2px solid var(--ink);
-  background: var(--ink);
-}
-.block-num { font-family: 'Anton', sans-serif; font-size: 1.1rem; color: var(--red); }
-.block-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--paper); }
-.block-body { padding: 14px; }
-
-textarea {
-  width: 100%;
-  background: transparent;
-  border: none;
-  border-bottom: 1.5px solid var(--ruled);
-  color: var(--ink);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  line-height: 2;
-  padding: 4px 0;
-  resize: none;
-  outline: none;
-  min-height: 160px;
-}
-textarea::placeholder { color: #bbb; }
-
-.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; min-height: 24px; }
-.chip { font-family: 'IBM Plex Mono', monospace; font-size: 9px; padding: 3px 8px; border: 1px solid var(--ink); background: white; letter-spacing: 0.5px; }
-.chip.is-note { background: rgba(230,51,34,0.1); border-color: var(--red); color: var(--red); }
-
-.photo-drop {
-  width: 100%; height: 140px;
-  border: 2px dashed #bbb;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; position: relative; overflow: hidden;
-  background: #fafafa;
-}
-.photo-drop:active { border-color: var(--red); }
-.photo-drop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.drop-hint { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #bbb; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-#photoInput { display: none; }
-
-.style-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.sty {
-  border: 2px solid var(--ink); padding: 12px 8px; text-align: center;
-  cursor: pointer; font-family: 'Anton', sans-serif; font-size: 1rem;
-  letter-spacing: 1.5px; background: white;
-  box-shadow: 3px 3px 0 var(--ink); transition: all 0.1s;
-}
-.sty:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
-.sty.on { background: var(--ink); color: var(--paper); }
-.sty-sub { font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 0; display: block; margin-top: 2px; opacity: 0.6; font-weight: normal; }
-
-#genBtn {
-  width: 100%; padding: 20px;
-  background: var(--red); color: white;
-  border: 2px solid var(--ink);
-  font-family: 'Anton', sans-serif; font-size: 1.5rem; letter-spacing: 3px;
-  cursor: pointer; box-shadow: 5px 5px 0 var(--ink); transition: all 0.1s; margin-top: 4px;
-}
-#genBtn:active { transform: translate(3px,3px); box-shadow: 2px 2px 0 var(--ink); }
-#genBtn:disabled { opacity: 0.4; pointer-events: none; }
-
-#outSection { display: none; margin-top: 16px; }
-#cardCanvas { width: 100%; display: block; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); }
-#saveBtn {
-  width: 100%; margin-top: 10px; padding: 16px;
-  background: white; color: var(--ink);
-  border: 2px solid var(--ink); font-family: 'Anton', sans-serif;
-  font-size: 1.1rem; letter-spacing: 2px;
-  cursor: pointer; box-shadow: 4px 4px 0 var(--ink); transition: all 0.1s;
-}
-#saveBtn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--ink); }
-
-.loader { display: none; text-align: center; padding: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #999; }
-.loader.on { display: block; }
-</style>
+        #resultContainer { width: 100%; max-width: 500px; display: none; margin-top: 20px; text-align: center; }
+        #resultImage { width: 100%; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); -webkit-touch-callout: default !important; pointer-events: auto; }
+        canvas { display: none; }
+        .guide { color: #888; font-size: 13px; margin-top: 15px; line-height: 1.5; }
+    </style>
 </head>
 <body>
 
-<div class="app-header">
-  <div class="app-title">LIFT<span>.</span>CARD</div>
-  <div class="app-ver">v2.0 · STRONG→IG</div>
-</div>
-
-<div class="block">
-  <div class="block-head"><span class="block-num">01</span><span class="block-title">운동 로그 붙여넣기</span></div>
-  <div class="block-body">
-    <textarea id="logInput" placeholder="Strong 앱 결과화면 텍스트 전체를 붙여넣으세요."></textarea>
-    <div class="chips" id="parsedChips"></div>
-  </div>
-</div>
-
-<div class="block">
-  <div class="block-head"><span class="block-num">02</span><span class="block-title">사진 선택</span></div>
-  <div class="block-body">
-    <div class="photo-drop" id="photoArea" onclick="document.getElementById('photoInput').click()">
-      <div class="drop-hint">
-        <svg width="28" height="28" fill="none" stroke="#bbb" stroke-width="1.5" viewBox="0 0 24 24">
-          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
-        </svg>
-        <span>탭하여 사진 선택</span>
-      </div>
+<div class="editor">
+    <h2>SSimage 2</h2>
+    <textarea id="logInput" placeholder="Strong 로그를 복사해 넣으세요..."></textarea>
+    
+    <div class="btn-group">
+        <button class="btn btn-swim" onclick="recordManual('swim')">🏊‍♂️ 수영 추가</button>
+        <button class="btn btn-run" onclick="recordManual('run')">🏃‍♂️ 달리기 추가</button>
     </div>
-    <input type="file" id="photoInput" accept="image/*">
-  </div>
-</div>
 
-<div class="block">
-  <div class="block-head"><span class="block-num">03</span><span class="block-title">카드 스타일</span></div>
-  <div class="block-body">
-    <div class="style-grid">
-      <div class="sty on" data-s="brutal">BRUTAL<span class="sty-sub">흑백 + 레드</span></div>
-      <div class="sty" data-s="night">NIGHT<span class="sty-sub">딥블루 + 네온</span></div>
-      <div class="sty" data-s="print">PRINT<span class="sty-sub">신문 + 잉크</span></div>
-      <div class="sty" data-s="tape">TAPE<span class="sty-sub">크래프트 + 금</span></div>
+    <button class="btn btn-sub" onclick="pasteLog()">📋 클립보드 붙여넣기</button>
+    <input type="file" id="imageInput" accept="image/*" style="display:none">
+    <label for="imageInput" class="btn btn-sub" id="fileLabel" style="display: block; text-align: center;">
+        🖼️ 사진 선택하기
+    </label>
+
+    <!-- 디자인 타입 선택 -->
+    <div class="type-selector">
+        <button class="type-btn active-A" id="typeA" onclick="selectType('A')">
+            TYPE A
+            <span class="type-label">클래식 카드</span>
+        </button>
+        <button class="type-btn" id="typeB" onclick="selectType('B')">
+            TYPE B
+            <span class="type-label">터미널</span>
+        </button>
+        <button class="type-btn" id="typeC" onclick="selectType('C')">
+            TYPE C
+            <span class="type-label">매거진</span>
+        </button>
     </div>
-  </div>
+
+    <button class="btn" onclick="processWorkout()">이미지 생성 (딸깍!)</button>
 </div>
 
-<button id="genBtn">GENERATE CARD →</button>
-<div class="loader" id="loader">렌더링 중 ···</div>
-
-<div id="outSection">
-  <canvas id="cardCanvas"></canvas>
-  <button id="saveBtn">↓ 이미지 저장</button>
+<div id="resultContainer">
+    <img id="resultImage" alt="Result Workout Image">
+    <button id="pushGithubBtn" class="btn btn-data" style="display:block; background: #6c5ce7; color: white;">🚀 깃허브로 데이터 쏘기</button>
+    <button id="saveDataBtn" class="btn btn-data" onclick="downloadData()">📊 파일로 저장 (비상용)</button>
+    <div class="guide" onclick="resetToken()" style="cursor:pointer">SHARE STRONG IMAGE V2</div>
 </div>
+
+<canvas id="canvas"></canvas>
 
 <script>
-// ═══════════════════════════
-//  PARSER
-// ═══════════════════════════
-function parseLog(raw) {
-  const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean);
-  let title = '', dateStr = '', exercises = [];
-  let i = 0;
+    let GITHUB_TOKEN = localStorage.getItem('gh_token') || ""; 
+    const GITHUB_REPO = "bulcoh/ssimg2"; 
+    const GITHUB_FILE_PATH = "data.json";
 
-  // 제목
-  if (lines[i] && /^[A-Z가-힣#\s\d\(\)]+$/.test(lines[i]) && !/년|월|일/.test(lines[i])) {
-    title = lines[i++];
-  }
-  // 날짜
-  if (lines[i] && /년|월|일/.test(lines[i])) { dateStr = lines[i++]; }
+    let currentMinutes = 0;
+    let currentFileDate = "";
+    let selectedType = 'A';
 
-  const isSetLine  = l => /^세트\s*\d+\s*:/.test(l);
-  const isWarmup   = l => /^W\s*:/.test(l);
-  const isDrop     = l => /^D\s*:/.test(l);
-  const isDataLine = l => isSetLine(l) || isWarmup(l) || isDrop(l);
-  const isUrl      = l => /^https?:\/\//.test(l);
-  const isEndTag   = l => /^로그끝/.test(l);
-
-  let cur = null;
-
-  while (i < lines.length) {
-    const l = lines[i];
-
-    if (isUrl(l) || isEndTag(l)) { i++; continue; }
-
-    if (isDataLine(l)) {
-      if (cur && isSetLine(l)) cur.setCount++;
-      i++; continue;
+    function selectType(type) {
+        selectedType = type;
+        ['A','B','C'].forEach(t => {
+            const btn = document.getElementById('type' + t);
+            btn.className = 'type-btn';
+            if (t === type) btn.classList.add('active-' + t);
+        });
     }
 
-    // 데이터가 아닌 줄 = 운동명 or 메모
-    if (!cur) {
-      cur = { name: l, note: null, setCount: 0 };
-    } else if (cur.setCount === 0 && cur.note === null) {
-      // 아직 세트 없고 메모 없음 → 메모로 처리
-      cur.note = l;
-    } else {
-      // 새 종목
-      if (cur.setCount > 0) exercises.push(cur);
-      cur = { name: l, note: null, setCount: 0 };
-    }
-    i++;
-  }
-  if (cur && cur.setCount > 0) exercises.push(cur);
-
-  return { title, dateStr, exercises };
-}
-
-// ═══════════════════════════
-//  UI
-// ═══════════════════════════
-let userPhoto = null, selStyle = 'brutal';
-
-document.getElementById('logInput').addEventListener('input', function() {
-  const d = parseLog(this.value);
-  const c = document.getElementById('parsedChips');
-  c.innerHTML = '';
-  if (d.title) c.innerHTML += `<span class="chip">${d.title}</span>`;
-  if (d.dateStr) c.innerHTML += `<span class="chip">${d.dateStr}</span>`;
-  d.exercises.forEach(e => {
-    c.innerHTML += `<span class="chip">${e.name} ×${e.setCount}</span>`;
-    if (e.note) c.innerHTML += `<span class="chip is-note">📝 ${e.note}</span>`;
-  });
-});
-
-document.getElementById('photoInput').addEventListener('change', function(e) {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = ev => {
-    userPhoto = ev.target.result;
-    document.getElementById('photoArea').innerHTML = `<img src="${userPhoto}">`;
-  };
-  r.readAsDataURL(f);
-});
-
-document.querySelectorAll('.sty').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('.sty').forEach(x => x.classList.remove('on'));
-    b.classList.add('on');
-    selStyle = b.dataset.s;
-  });
-});
-
-document.getElementById('genBtn').addEventListener('click', () => {
-  const raw = document.getElementById('logInput').value;
-  if (!raw.trim()) { alert('로그를 붙여넣어주세요.'); return; }
-  const btn = document.getElementById('genBtn');
-  btn.disabled = true;
-  document.getElementById('loader').classList.add('on');
-  setTimeout(() => {
-    drawCard(parseLog(raw), userPhoto, selStyle);
-    document.getElementById('loader').classList.remove('on');
-    document.getElementById('outSection').style.display = 'block';
-    document.getElementById('outSection').scrollIntoView({ behavior: 'smooth' });
-    btn.disabled = false;
-  }, 80);
-});
-
-document.getElementById('saveBtn').addEventListener('click', () => {
-  const a = document.createElement('a');
-  a.download = `liftcard_${Date.now()}.png`;
-  a.href = document.getElementById('cardCanvas').toDataURL('image/png');
-  a.click();
-});
-
-// ═══════════════════════════
-//  CANVAS DRAW
-// ═══════════════════════════
-const THEMES = {
-  brutal: {
-    bg: '#f0ece3', photoOverlay: 'rgba(0,0,0,0.45)',
-    headerBg: '#0d0d0d', headerText: '#f0ece3', accent: '#e63322',
-    cardBg: '#ffffff', cardBorder: '#0d0d0d',
-    exName: '#0d0d0d', setDot: '#e63322', noteTxt: '#e63322',
-    footerText: '#aaa', shadow: '#0d0d0d', ruled: true
-  },
-  night: {
-    bg: '#070b1a', photoOverlay: 'rgba(7,11,26,0.55)',
-    headerBg: '#0f153a', headerText: '#e8f0ff', accent: '#00f5c4',
-    cardBg: '#0f153a', cardBorder: '#1d2760',
-    exName: '#e8f0ff', setDot: '#00f5c4', noteTxt: '#7b9aff',
-    footerText: '#2a3568', shadow: null, ruled: false
-  },
-  print: {
-    bg: '#fffff0', photoOverlay: 'rgba(0,0,0,0.55)',
-    headerBg: '#fffff0', headerText: '#111', accent: '#111',
-    cardBg: '#fffff0', cardBorder: '#111',
-    exName: '#111', setDot: '#111', noteTxt: '#555',
-    footerText: '#aaa', shadow: '#bbb', ruled: true
-  },
-  tape: {
-    bg: '#2b1f0e', photoOverlay: 'rgba(20,12,0,0.5)',
-    headerBg: '#3d2b12', headerText: '#f5dfa0', accent: '#d4af37',
-    cardBg: '#3d2b12', cardBorder: '#5a3e18',
-    exName: '#f5dfa0', setDot: '#d4af37', noteTxt: '#d4af37',
-    footerText: '#6b4d22', shadow: '#d4af37', ruled: false
-  }
-};
-
-function drawCard(data, photo, style) {
-  const W = 1080, H = 1350;
-  const cv = document.getElementById('cardCanvas');
-  cv.width = W; cv.height = H;
-  const ctx = cv.getContext('2d');
-  const t = THEMES[style];
-
-  // bg
-  ctx.fillStyle = t.bg;
-  ctx.fillRect(0, 0, W, H);
-
-  // ruled lines
-  if (t.ruled) {
-    ctx.strokeStyle = 'rgba(0,0,0,0.04)';
-    ctx.lineWidth = 1;
-    for (let y = 60; y < H; y += 48) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-    }
-  }
-
-  // PHOTO
-  let photoBottom = 0;
-  if (photo) {
-    const img = new Image(); img.src = photo;
-    const pH = 560;
-    ctx.save();
-    ctx.beginPath(); ctx.rect(0, 0, W, pH); ctx.clip();
-    const ir = img.naturalWidth / img.naturalHeight, cr = W / pH;
-    let sw = img.naturalWidth, sh = img.naturalHeight, sx = 0, sy = 0;
-    if (ir > cr) { sw = sh * cr; sx = (img.naturalWidth - sw) / 2; }
-    else { sh = sw / cr; sy = (img.naturalHeight - sh) / 2; }
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, pH);
-    const g = ctx.createLinearGradient(0, pH * 0.25, 0, pH);
-    g.addColorStop(0, 'rgba(0,0,0,0)');
-    g.addColorStop(1, t.photoOverlay);
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, pH);
-    ctx.restore();
-    photoBottom = pH;
-  }
-
-  // HEADER
-  const hY = photo ? photoBottom - 160 : 30;
-  if (!photo && style !== 'print') {
-    ctx.fillStyle = t.headerBg;
-    ctx.fillRect(0, 0, W, 195);
-  }
-
-  ctx.font = `normal 104px 'Anton', sans-serif`;
-  ctx.fillStyle = photo ? '#ffffff' : t.headerText;
-  ctx.fillText(data.title || 'WORKOUT', 52, hY + 100);
-
-  ctx.fillStyle = t.accent;
-  ctx.fillRect(52, hY + 116, 200, 7);
-
-  ctx.font = `400 28px 'IBM Plex Mono', monospace`;
-  ctx.fillStyle = photo ? 'rgba(255,255,255,0.8)' : (style === 'print' ? '#777' : t.accent);
-  ctx.fillText(data.dateStr || '', 52, hY + 158);
-
-  // EXERCISE GRID
-  const listTop = photo ? photoBottom + 36 : 218;
-  const PAD = 52, GAP = 16;
-  const colW = (W - PAD * 2 - GAP) / 2;
-  const ROW_H = 92;
-  const maxEx = Math.min(data.exercises.length, 10);
-
-  for (let i = 0; i < maxEx; i++) {
-    const ex = data.exercises[i];
-    const col = i % 2;
-    const row = Math.floor(i / 2);
-    const cx = PAD + col * (colW + GAP);
-    const cy = listTop + row * ROW_H;
-    const ch = ROW_H - 10;
-
-    // shadow
-    if (t.shadow) {
-      ctx.fillStyle = t.shadow;
-      ctx.fillRect(cx + 5, cy + 5, colW, ch);
-    }
-    // card
-    ctx.fillStyle = t.cardBg;
-    ctx.fillRect(cx, cy, colW, ch);
-    ctx.strokeStyle = t.cardBorder;
-    ctx.lineWidth = style === 'night' ? 1 : 2;
-    ctx.strokeRect(cx, cy, colW, ch);
-
-    // left stripe
-    ctx.fillStyle = t.accent;
-    ctx.fillRect(cx, cy, 6, ch);
-
-    // name
-    const name = ex.name.length > 19 ? ex.name.slice(0,17) + '…' : ex.name;
-    ctx.font = `700 21px 'Noto Sans KR', sans-serif`;
-    ctx.fillStyle = t.exName;
-    ctx.fillText(name, cx + 18, cy + 28);
-
-    // note
-    if (ex.note) {
-      const noteShort = ex.note.length > 20 ? ex.note.slice(0,18) + '…' : ex.note;
-      ctx.font = `400 15px 'IBM Plex Mono', monospace`;
-      ctx.fillStyle = t.noteTxt;
-      ctx.fillText(`"${noteShort}"`, cx + 18, cy + 48);
+    function checkToken() {
+        if (!GITHUB_TOKEN) {
+            const input = prompt("🔐 깃허브 토큰이 없습니다.\n처음 한 번만 입력해주세요. (브라우저에 저장됩니다):", "");
+            if (input && input.trim().length > 0) {
+                GITHUB_TOKEN = input.trim();
+                localStorage.setItem('gh_token', GITHUB_TOKEN);
+                return true;
+            }
+            alert("토큰이 없으면 깃허브 전송이 안 돼, 형!");
+            return false;
+        }
+        return true;
     }
 
-    // dots + count
-    const dotY = cy + ch - 16;
-    const maxDots = Math.min(ex.setCount, 12);
-    for (let s = 0; s < maxDots; s++) {
-      ctx.beginPath();
-      ctx.arc(cx + 18 + s * 16, dotY, 6, 0, Math.PI * 2);
-      ctx.fillStyle = t.setDot;
-      ctx.fill();
+    function resetToken() {
+        if(confirm("저장된 깃허브 토큰을 지울까?")) {
+            localStorage.removeItem('gh_token');
+            GITHUB_TOKEN = "";
+            alert("삭제 완료! 다음 전송 때 새로 물어볼게.");
+        }
     }
-    ctx.font = `600 15px 'IBM Plex Mono', monospace`;
-    ctx.fillStyle = t.setDot;
-    ctx.fillText(`×${ex.setCount}`, cx + colW - 44, dotY + 5);
-  }
 
-  // overflow
-  if (data.exercises.length > maxEx) {
-    const rows = Math.ceil(maxEx / 2);
-    const ty = listTop + rows * ROW_H + 10;
-    ctx.font = `600 22px 'IBM Plex Mono', monospace`;
-    ctx.fillStyle = t.accent;
-    ctx.fillText(`+ ${data.exercises.length - maxEx} more`, PAD, ty);
-  }
+    async function pushToGithub(type, mins, dateStr) {
+        if (!checkToken()) return;
+        const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
+        let sha = "";
+        let currentData = {};
+        try {
+            const res = await fetch(url, { headers: { "Authorization": `Bearer ${GITHUB_TOKEN}` } });
+            if (res.ok) {
+                const json = await res.json();
+                sha = json.sha;
+                const content = decodeURIComponent(atob(json.content).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                currentData = JSON.parse(content);
+            }
+        } catch (e) { console.log("기존 데이터 없음 또는 에러:", e); }
+        if (!currentData[dateStr]) currentData[dateStr] = { strong: 0, swim: 0, run: 0 };
+        currentData[dateStr][type] = mins;
+        const jsonStr = JSON.stringify(currentData, null, 2);
+        const encodedContent = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g,
+            function(match, p1) { return String.fromCharCode('0x' + p1); }));
+        const putRes = await fetch(url, {
+            method: "PUT",
+            headers: { "Authorization": `Bearer ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ message: `Update ${type} at ${dateStr}`, content: encodedContent, sha: sha })
+        });
+        if (putRes.ok) {
+            alert(`✅ ${type} ${mins}분 저장 완료!`);
+        } else {
+            const errorDetail = await putRes.json();
+            if (putRes.status === 401 || putRes.status === 403) {
+                alert("❌ 토큰 권한 문제야.");
+            } else {
+                alert(`❌ 저장 실패: ${errorDetail.message}`);
+            }
+        }
+    }
 
-  // FOOTER
-  ctx.fillStyle = t.accent;
-  ctx.fillRect(PAD, H - 82, W - PAD * 2, 2);
+    async function recordManual(type) {
+        const mins = prompt(`${type === 'swim' ? '수영' : '달리기'} 몇 분 했어?`, "0");
+        if (mins && !isNaN(mins)) {
+            const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            await pushToGithub(type, parseInt(mins), dateStr);
+        }
+    }
 
-  ctx.font = `400 22px 'IBM Plex Mono', monospace`;
-  ctx.fillStyle = t.footerText;
-  ctx.fillText('STRONG APP', PAD, H - 44);
+    document.getElementById('imageInput').onchange = function() {
+        const label = document.getElementById('fileLabel');
+        label.innerText = "✅ 사진 선택 완료";
+        label.classList.add('btn-done');
+        if(document.getElementById("logInput").value.trim()){
+            setTimeout(processWorkout,300);
+        }
+    };
 
-  const totalSets = data.exercises.reduce((a, e) => a + e.setCount, 0);
-  const badge = `TOTAL ${totalSets} SETS`;
-  ctx.font = `600 22px 'IBM Plex Mono', monospace`;
-  ctx.fillStyle = t.accent;
-  const bw = ctx.measureText(badge).width;
-  ctx.fillText(badge, W - PAD - bw, H - 44);
-}
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const resultImg = document.getElementById('resultImage');
+    const resultContainer = document.getElementById('resultContainer');
+
+    async function pasteLog() {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) document.getElementById('logInput').value = text;
+        } catch (err) { alert("붙여넣기 권한이 필요합니다."); }
+    }
+    
+    window.addEventListener("load", async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if(text){ document.getElementById("logInput").value = text; }
+        } catch(e){}
+    });
+    
+    function parseTimeString(timeStr) {
+        const parts = timeStr.match(/(오전|오후)\s*(\d+):(\d+)/);
+        if (!parts) return null;
+        let hours = parseInt(parts[2]);
+        const minutes = parseInt(parts[3]);
+        if (parts[1] === "오후" && hours < 12) hours += 12;
+        else if (parts[1] === "오전" && hours === 12) hours = 0;
+        return { hours, minutes };
+    }
+
+    function parseWorkout(rawText, photoTime) {
+        const paragraphs = rawText.split(/\n\s*\n/).map(p => p.trim()).filter(p => p !== "");
+        const headerLines = paragraphs[0].split('\n');
+        const workoutTitle = headerLines[0];
+        const dateTime = headerLines[1] || "";
+        
+        const timeMatch = dateTime.match(/(오전|오후)\s*\d+:\d+/);
+        const start = timeMatch ? parseTimeString(timeMatch[0]) : {hours:0, minutes:0};
+        
+        const dateParts = dateTime.match(/(\d+)년\s*(\d+)월\s*(\d+)일/);
+        const fileDate = dateParts ? `${dateParts[1]}${dateParts[2].padStart(2, '0')}${dateParts[3].padStart(2, '0')}` : "00000000";
+
+        let endTotal = photoTime.getHours() * 60 + photoTime.getMinutes();
+        let startTotal = start.hours * 60 + start.minutes;
+        if (endTotal < startTotal) endTotal += 1440;
+        const minutes = endTotal - startTotal;
+
+        let totalSets = 0, exerciseList = [];
+        paragraphs.slice(1).forEach(para => {
+            const lines = para.split('\n').map(l => l.trim());
+            let foundName = "", setsInPara = 0, hasRecord = false, noteText = "";
+            lines.forEach(line => {
+                const isSet = /^(세트\s*\d+|W|F|D|Set\s*\d+):/i.test(line);
+                if (isSet) {
+                    hasRecord = true;
+                    if (!line.toUpperCase().startsWith('W:')) { totalSets++; setsInPara++; }
+                } else if (line.startsWith('노트:')) {
+                    noteText = line.replace('노트:', '').trim();
+                } else if (!foundName && isNaN(line[0]) && !line.includes("kg") && !line.startsWith("http")) {
+                    foundName = line;
+                }
+            });
+            if (foundName && hasRecord) exerciseList.push({ name: foundName, sets: setsInPara, note: noteText });
+        });
+
+        return { workoutTitle, dateTime, fileDate, minutes, totalSets, exerciseList };
+    }
+
+    function processWorkout() {
+        const rawText = document.getElementById('logInput').value;
+        const file = document.getElementById('imageInput').files[0];
+        if (!rawText || !file) return alert("텍스트와 사진을 모두 넣어주세요!");
+
+        const photoTime = new Date(file.lastModified);
+        const parsed = parseWorkout(rawText, photoTime);
+        currentMinutes = parsed.minutes;
+        currentFileDate = parsed.fileDate;
+
+        const duration = `${Math.floor(currentMinutes/60)}h ${currentMinutes%60}m`;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                document.fonts.ready.then(() => {
+                    if (selectedType === 'A') {
+                        drawTypeA(img, parsed.workoutTitle, parsed.dateTime, duration, parsed.totalSets, parsed.exerciseList);
+                    } else if (selectedType === 'B') {
+                        drawTypeB(img, parsed.workoutTitle, parsed.dateTime, duration, parsed.totalSets, parsed.exerciseList);
+                    } else {
+                        drawTypeC(img, parsed.workoutTitle, parsed.dateTime, duration, parsed.totalSets, parsed.exerciseList);
+                    }
+                    resultImg.src = canvas.toDataURL('image/png');
+                    resultContainer.style.display = 'block';
+                    
+                    const pushBtn = document.getElementById('pushGithubBtn');
+                    pushBtn.onclick = () => pushToGithub('strong', currentMinutes, currentFileDate);
+                    pushBtn.innerText = "🚀 깃허브로 데이터 쏘기";
+                    pushBtn.classList.remove('btn-done');
+                });
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function downloadData() {
+        const fileName = `ssimg_${currentFileDate}_${currentMinutes}.txt`;
+        const blob = new Blob(["workout"], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+    }
+
+    // ─── TYPE A (기존 오리지널) ───────────────────────────────────────────────
+    function drawTypeA(img, workoutTitle, dateTime, duration, totalSets, exerciseList) {
+        canvas.width = 1080; canvas.height = 1350; 
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const cardH = canvas.height * 0.55;
+        const grad = ctx.createLinearGradient(0, canvas.height - cardH, 0, canvas.height);
+        grad.addColorStop(0, "rgba(0,0,0,0)");
+        grad.addColorStop(0.3, "rgba(0,0,0,0.5)");
+        grad.addColorStop(1, "rgba(0,0,0,0.8)"); 
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, canvas.height - cardH, canvas.width, cardH);
+
+        const margin = 70;
+        const colW = (canvas.width - margin * 2) / 2 - 30;
+        const rowHeight = 70;
+        const bottomY = canvas.height - 180; 
+        const half = Math.ceil(exerciseList.length / 2);
+
+        exerciseList.forEach((ex, i) => {
+            let isRightCol = i >= half;
+            let rowIdx = isRightCol ? i - half : i;
+            const totalRowsInCol = isRightCol ? (exerciseList.length - half) : half;
+            let x = margin + (isRightCol ? colW + 60 : 0);
+            let y = bottomY - (totalRowsInCol - 1 - rowIdx) * rowHeight;
+            ctx.textAlign = "left"; ctx.fillStyle = "white"; ctx.font = "700 36px 'Inter'";
+            let name = ex.name;
+            if (ctx.measureText(name).width > colW - 150) {
+                while (ctx.measureText(name + "..").width > colW - 150) { name = name.slice(0, -1); }
+                name += "..";
+            }
+            ctx.fillText(name, x, y);
+            ctx.textAlign = "right"; ctx.fillStyle = "#ff4757";
+            ctx.font = "700 " + (ex.sets > 5 ? 26 : 36) + "px 'Inter'";
+            ctx.fillText("ㅇ".repeat(ex.sets), x + colW, y);
+        });
+
+        const summaryY = canvas.height - 180 - (Math.max(half, exerciseList.length - half) - 1) * rowHeight - 110; 
+        ctx.textAlign = "center"; ctx.fillStyle = "#ccc"; ctx.font = "400 32px 'Inter'";
+        ctx.fillText(dateTime + "  |  " + duration + "  |  TOTAL " + totalSets + " SETS", canvas.width / 2, summaryY);
+        ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(margin, summaryY + 45); ctx.lineTo(canvas.width - margin, summaryY + 45); ctx.stroke();
+        ctx.textAlign = "center"; ctx.fillStyle = "#ff4757"; ctx.font = "700 85px 'Archivo Black'";
+        ctx.fillText(workoutTitle.toUpperCase(), canvas.width / 2, canvas.height - 45);
+    }
+
+    // ─── TYPE B ─────────────────────────────────────────────────────────────
+    function drawTypeB(img, workoutTitle, dateTime, duration, totalSets, exerciseList) {
+        canvas.width = 1080; canvas.height = 1350;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const iX = 70;
+        const rX = canvas.width - 70;
+
+        // 상단 그라디언트: 더 진하게 — 위 검정75% → 투명
+        const topGrad = ctx.createLinearGradient(0, 0, 0, 420);
+        topGrad.addColorStop(0,   "rgba(0,0,0,0.82)");
+        topGrad.addColorStop(0.6, "rgba(0,0,0,0.4)");
+        topGrad.addColorStop(1,   "rgba(0,0,0,0)");
+        ctx.fillStyle = topGrad;
+        ctx.fillRect(0, 0, canvas.width, 420);
+
+        // 하단 그라디언트: 목록 높이에 맞게
+        const half = Math.ceil(exerciseList.length / 2);
+        const hasNote = exerciseList.some(function(e){ return e.note; });
+        const rowH = hasNote ? 62 : 52;  // 여백 타이트하게
+        const listAreaH = half * rowH + 70;
+        const botGradTop = canvas.height - listAreaH - 60;
+
+        const botGrad = ctx.createLinearGradient(0, botGradTop, 0, canvas.height);
+        botGrad.addColorStop(0, "rgba(0,0,0,0)");
+        botGrad.addColorStop(1, "rgba(0,0,0,0.65)");
+        ctx.fillStyle = botGrad;
+        ctx.fillRect(0, botGradTop, canvas.width, canvas.height - botGradTop);
+
+        // ── 상단: 제목 (빨간색, 중앙정렬, 더 크게) ──
+        ctx.fillStyle = "#ff4757";
+        ctx.font = "700 140px 'Archivo Black'";
+        ctx.textAlign = "center";
+        ctx.fillText(workoutTitle.toUpperCase(), canvas.width / 2, 158);
+
+        // 메타 (중앙정렬)
+        ctx.fillStyle = "rgba(255,255,255,0.55)";
+        ctx.font = "400 30px 'Inter'";
+        ctx.textAlign = "center";
+        ctx.fillText(dateTime + "  |  " + duration + "  |  TOTAL " + totalSets + " SETS", canvas.width / 2, 205);
+
+        // 상단 구분선
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(iX, 226);
+        ctx.lineTo(rX, 226);
+        ctx.stroke();
+
+        // ── 하단: 2단 운동 목록 — 하단에서 위로 쌓음 ──
+        const colW = (canvas.width - iX * 2 - 40) / 2;
+        const col2X = iX + colW + 40;
+
+        // 목록 맨 아래 기준점: 서명 위 10px
+        const signY = canvas.height - 18;
+        const listBot = signY - 60;  // 서명과 목록 사이 한 칸
+
+        exerciseList.forEach(function(ex, i) {
+            const col = i >= half ? 1 : 0;
+            const row = col === 0 ? i : i - half;
+            const colRows = col === 0 ? half : exerciseList.length - half;
+            const x  = col === 0 ? iX : col2X;
+            const xR = col === 0 ? iX + colW : col2X + colW;
+
+            // 아래에서 위로 배치
+            const y = listBot - (colRows - 1 - row) * rowH;
+
+            // 이름
+            ctx.fillStyle = "rgba(255,255,255,0.92)";
+            ctx.font = "700 34px 'Inter'";
+            ctx.textAlign = "left";
+            let name = ex.name;
+            const maxW = colW - 155;
+            if (ctx.measureText(name).width > maxW) {
+                while (ctx.measureText(name + "..").width > maxW) name = name.slice(0, -1);
+                name += "..";
+            }
+            ctx.fillText(name, x, y);
+
+            // 노트
+            if (ex.note) {
+                ctx.fillStyle = "rgba(255,210,75,0.78)";
+                ctx.font = "400 20px 'Inter'";
+                ctx.fillText(ex.note, x, y + 22);
+            }
+
+            // ㅇ 세트
+            ctx.fillStyle = "#ff4757";
+            ctx.font = "700 " + (ex.sets > 5 ? 26 : 32) + "px 'Inter'";
+            ctx.textAlign = "right";
+            ctx.fillText("ㅇ".repeat(ex.sets), xR, y);
+        });
+
+        // 하단 서명
+        ctx.fillStyle = "rgba(255,255,255,0.22)";
+        ctx.font = "400 22px 'Inter'";
+        ctx.textAlign = "center";
+        ctx.fillText("SHARE STRONG IMAGE V2", canvas.width / 2, signY);
+    }
+
+    // ─── TYPE C : 좌하단 카드 ──────────────────────────────────────────────
+    function drawTypeC(img, workoutTitle, dateTime, duration, totalSets, exerciseList) {
+        canvas.width = 1080; canvas.height = 1350;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const ACCENT = "#ff4757";
+        const pad = 36;        // 카드 내부 패딩
+        const cardW = 460;     // 카드 너비
+        const cardX = 40;      // 좌측 여백
+        const cardBot = canvas.height - 40; // 하단 여백
+
+        // 카드 높이 계산 (운동 목록 수에 따라)
+        const hasNote = exerciseList.some(function(e){ return e.note; });
+        const rowH = hasNote ? 80 : 68;
+        const listH = exerciseList.length * rowH;
+        const headerH = 260; // 타이틀+메타 영역
+        const footerH = 40;
+        const cardH = headerH + listH + footerH;
+        const cardY = cardBot - cardH;
+
+        // 카드 배경 (반투명 검정)
+        ctx.fillStyle = "rgba(0,0,0,0.50)";
+        roundRect(ctx, cardX, cardY, cardW, cardH, 16);
+        ctx.fill();
+
+        const iX = cardX + pad;
+        const rX = cardX + cardW - pad;
+
+        // ── 타이틀 ──
+        ctx.fillStyle = ACCENT;
+        ctx.textAlign = "left";
+        let fs = 88;
+        ctx.font = "700 " + fs + "px 'Archivo Black'";
+        while (ctx.measureText(workoutTitle.toUpperCase()).width > rX - iX && fs > 44) {
+            fs -= 4;
+            ctx.font = "700 " + fs + "px 'Archivo Black'";
+        }
+        ctx.fillText(workoutTitle.toUpperCase(), iX, cardY + fs + 20);
+
+        // ── 메타 ──
+        const metaY = cardY + fs + 24;
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        ctx.font = "400 24px 'Inter'";
+        ctx.fillText(dateTime, iX, metaY + 32);
+        ctx.fillText("TOTAL " + totalSets + " SETS", iX, metaY + 62);
+        ctx.fillText(duration, iX, metaY + 92);
+
+        // 구분선
+        const divY = metaY + 110;
+        ctx.strokeStyle = "rgba(255,255,255,0.15)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(iX, divY);
+        ctx.lineTo(rX, divY);
+        ctx.stroke();
+
+        // ── 운동 목록 ──
+        const listStartY = divY + 30;
+
+        exerciseList.forEach(function(ex, i) {
+            const y = listStartY + i * rowH;
+
+            // 이름 — 밝은 회색
+            ctx.fillStyle = "rgba(220,220,220,0.92)";
+            ctx.font = "700 26px 'Inter'";
+            ctx.textAlign = "left";
+            let name = ex.name;
+            const maxW = rX - iX;
+            if (ctx.measureText(name).width > maxW) {
+                while (ctx.measureText(name + "..").width > maxW) name = name.slice(0, -1);
+                name += "..";
+            }
+            ctx.fillText(name, iX, y);
+
+            // 노트
+            let blockY = y + 28;
+            if (ex.note) {
+                ctx.fillStyle = "rgba(255,210,75,0.78)";
+                ctx.font = "400 18px 'Inter'";
+                ctx.fillText(ex.note, iX, y + 24);
+                blockY = y + 46;
+            }
+
+            // 세트 블록 — 붉은색
+            ctx.fillStyle = ACCENT;
+            const bW = 26, bH = 20, bGap = 6;
+            const bc = Math.min(ex.sets, 10);
+            for (let s = 0; s < bc; s++) {
+                ctx.fillRect(iX + s * (bW + bGap), blockY - bH, bW, bH);
+            }
+            if (ex.sets > 10) {
+                ctx.fillStyle = "rgba(255,255,255,0.5)";
+                ctx.font = "400 17px 'Inter'";
+                ctx.fillText("+" + (ex.sets - 10), iX + bc * (bW + bGap) + 4, blockY - 2);
+            }
+        });
+
+        // 하단 서명
+        ctx.fillStyle = "rgba(255,255,255,0.18)";
+        ctx.font = "400 20px 'Inter'";
+        ctx.textAlign = "center";
+        ctx.fillText("SHARE STRONG IMAGE V2", cardX + cardW / 2, cardBot - 12);
+    }
+
+    // ─── 유틸: 둥근 사각형 ───────────────────────────────────────────────────
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    (function(){
+        const params = new URLSearchParams(location.search);
+        const data = params.get("log");
+        if(data){
+            document.getElementById("logInput").value = decodeURIComponent(data);
+            setTimeout(()=>{ document.getElementById("imageInput").click(); }, 500);
+        }
+    })();
 </script>
 </body>
 </html>
